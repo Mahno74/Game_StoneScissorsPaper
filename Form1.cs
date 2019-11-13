@@ -23,11 +23,12 @@ namespace StoneScissorsPaper
             button_stone.Enabled = enable;
             button_scissors.Enabled = enable;
             button_paper.Enabled = enable;
+            text_debug.Focus();
         }
         private void Button_start_Click(object sender, EventArgs e)
         {
             if (radio_server.Checked) StartServer();
-            if (radio_client.Checked) StartClient();
+            if (radio_client.Checked && !StartClient()) return;
             SetButtons(true);
             timer1.Enabled = true;
             button_start.Enabled = false;
@@ -45,14 +46,23 @@ namespace StoneScissorsPaper
             writer = new StreamWriter(server.GetStream());
             writer.AutoFlush = true;
         }
-        private void StartClient()
+        private bool StartClient()
         {
+
             TcpClient client = new TcpClient();
-            client.Connect(textBox_ip.Text, port);
-            client.ReceiveTimeout = 50;
+            try
+            {
+                client.Connect(textBox_ip.Text, port);
+                client.ReceiveTimeout = 50;
+            }
+            catch
+            {
+                MessageBox.Show("Серевер еще не запущен, можеты вам выбрать его роль?"); return false;
+            }
             reader = new StreamReader(client.GetStream());
             writer = new StreamWriter(client.GetStream());
             writer.AutoFlush = true;
+            return true;
         }
 
         private void Button_stone_Click(object sender, EventArgs e) => Send("K");
